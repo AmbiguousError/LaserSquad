@@ -20,7 +20,6 @@ class AStar:
         frontier = [(0, start)]
         came_from, cost_so_far = {start: None}, {start: 0}
         
-        # The end node cannot be occupied by another unit for pathing purposes
         if end in occupied_nodes:
             return []
 
@@ -30,9 +29,10 @@ class AStar:
             for dx, dy in self.neighbors:
                 next_node = (current[0] + dx, current[1] + dy)
                 
-                # --- MODIFICATION: Check against occupied nodes ---
+                # --- MODIFICATION: Check against walls, cover, and occupied nodes ---
                 if (not self.game_map.is_in_bounds(next_node[0], next_node[1]) or 
                         self.game_map.tiles[next_node[0]][next_node[1]].is_wall or
+                        self.game_map.tiles[next_node[0]][next_node[1]].is_cover or
                         next_node in occupied_nodes):
                     continue
 

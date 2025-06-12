@@ -5,10 +5,11 @@ import math
 
 class Tile:
     """Represents a single tile on the map."""
-    def __init__(self, x, y, is_wall=False):
+    def __init__(self, x, y, is_wall=False, is_cover=False):
         self.x = x
         self.y = y
         self.is_wall = is_wall
+        self.is_cover = is_cover # Low wall or object
         self.is_visible = False
         self.is_explored = False
 
@@ -28,6 +29,7 @@ class Unit:
         self.has_fired_overwatch = False
         self.name = name
         self.number = number
+        self.posture = 'standing' # Can be 'standing' or 'prone'
         
         # Stats
         self.distance_travelled = 0
@@ -42,6 +44,14 @@ class Unit:
         else:
             self.ranged_skill = settings.ENEMY_RANGED_SKILL
             self.melee_skill = settings.ENEMY_MELEE_SKILL
+
+    def change_posture(self):
+        """Toggles the unit's posture between standing and prone."""
+        if self.ap >= settings.POSTURE_CHANGE_COST:
+            self.ap -= settings.POSTURE_CHANGE_COST
+            self.posture = 'prone' if self.posture == 'standing' else 'standing'
+            # Changing posture cancels overwatch
+            self.is_on_overwatch = False
 
     def draw(self, surface, camera, font, game_time):
         """Draws the unit on the main game surface."""
@@ -59,7 +69,13 @@ class Unit:
             pygame.draw.circle(surface, settings.COLOR_LASER, center, settings.UNIT_RADIUS + 3, int(pulse)+1)
 
         color = settings.COLOR_PLAYER if self.team == 'player' else settings.COLOR_ENEMY
-        pygame.draw.circle(surface, color, center, settings.UNIT_RADIUS)
+        
+        # Draw based on posture
+        if self.posture == 'standing':
+            pygame.draw.circle(surface, color, center, settings.UNIT_RADIUS)
+        else: # Prone
+            prone_rect = pygame.Rect(center[0] - settings.UNIT_RADIUS, center[1] - settings.UNIT_RADIUS // 2, settings.UNIT_RADIUS * 2, settings.UNIT_RADIUS)
+            pygame.draw.ellipse(surface, color, prone_rect)
         
         if self.number is not None:
             num_text = font.render(str(self.number), True, settings.COLOR_WHITE)
@@ -86,6 +102,7 @@ class Unit:
         if self.path and self.ap >= settings.MOVE_COST:
             self.is_on_overwatch = False
             self.has_fired_overwatch = False
+            self.posture = 'standing' # Moving forces unit to stand
 
             next_pos = self.path.pop(0)
             self.x, self.y = next_pos
