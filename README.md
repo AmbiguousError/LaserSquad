@@ -1,5 +1,7 @@
 # LaserSquad: Tactical Turn-Based Game
 
+![LaserSquad Screenshot](./Laser%20Squad%20Screenshot.jpg)
+
 LaserSquad is a turn-based tactical squad game built with Python and Pygame. Command a 4-person squad through procedurally generated levels, engage in strategic combat, and lead your team to victory against hostile forces, or challenge a friend in two-player mode.
 
 ## Features
